@@ -29,10 +29,11 @@ services:
       - ./infra/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
       - dados_seaweedfs:/data
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8333/status"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:9333/cluster/status && nc -z 127.0.0.1 8333"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 5s
 
   ingestao:
     build:
