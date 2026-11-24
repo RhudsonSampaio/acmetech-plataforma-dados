@@ -29,10 +29,22 @@ Protótipo de engenharia de dados para ingestão de telemetria IoT (3 máquinas,
    make testar
    ```
 
-5. Para encerrar e limpar os volumes:
+5. Para inspecionar os arquivos Parquet e uma amostra dos dados na Bronze:
+   ```bash
+   make inspecionar
+   ```
+
+6. Para encerrar e limpar os volumes:
    ```bash
    make derrubar
    ```
+
+## Interfaces Visuais (Navegador)
+
+Com os containers em execução (`make subir`), acesse:
+* **SeaweedFS Filer UI (buckets e arquivos Parquet):** http://localhost:8888
+* **SeaweedFS Master UI (cluster e volumes):** http://localhost:9333
+* **Mongo Express (coleções `maquinas` e `custos_sku`):** http://localhost:8081
 
 ## Documentação e Decisões Arquiteturais
 

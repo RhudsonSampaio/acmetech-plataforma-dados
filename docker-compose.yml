@@ -24,6 +24,7 @@ services:
       -dir=/data
     ports:
       - "8333:8333"
+      - "8888:8888"
       - "9333:9333"
     volumes:
       - ./infra/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
@@ -55,6 +56,18 @@ services:
       - ./pipelines:/app
       - ./tests:/app/tests
     command: ["sh", "-c", "python popular_catalogo.py && python ingestao_bronze.py --lotes 3"]
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: acmetech-mongo-express
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${USUARIO_MONGO:-acmetech}:${SENHA_MONGO:-acmetech123}@mongodb:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH: "false"
 
 volumes:
   dados_mongo:
