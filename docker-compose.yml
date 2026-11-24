@@ -1,0 +1,60 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: acmetech-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${USUARIO_MONGO:-acmetech}
+      MONGO_INITDB_ROOT_PASSWORD: ${SENHA_MONGO:-acmetech123}
+    volumes:
+      - dados_mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.79
+    container_name: acmetech-seaweedfs
+    command: >
+      server -s3 -s3.port=8333
+      -s3.config=/etc/seaweedfs/s3.json
+      -dir=/data
+    ports:
+      - "8333:8333"
+      - "9333:9333"
+    volumes:
+      - ./infra/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+      - dados_seaweedfs:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8333/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ingestao:
+    build:
+      context: ./pipelines
+    container_name: acmetech-ingestao
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      seaweedfs:
+        condition: service_healthy
+    environment:
+      URI_MONGO: mongodb://${USUARIO_MONGO:-acmetech}:${SENHA_MONGO:-acmetech123}@mongodb:27017/?authSource=admin
+      BANCO_MONGO: acmetech
+      ENDPOINT_S3: http://seaweedfs:8333
+      AWS_ACCESS_KEY_ID: ${CHAVE_ACESSO_S3:-acmetech}
+      AWS_SECRET_ACCESS_KEY: ${CHAVE_SECRETA_S3:-acmetech123}
+      BUCKET_S3: acmetech-lake
+    volumes:
+      - ./pipelines:/app
+      - ./tests:/app/tests
+    command: ["sh", "-c", "python popular_catalogo.py && python ingestao_bronze.py --lotes 3"]
+
+volumes:
+  dados_mongo:
+  dados_seaweedfs:

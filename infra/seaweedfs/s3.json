@@ -1,0 +1,14 @@
+{
+  "identities": [
+    {
+      "name": "acmetech",
+      "credentials": [
+        {
+          "accessKey": "acmetech",
+          "secretKey": "acmetech123"
+        }
+      ],
+      "actions": ["Admin", "Read", "List", "Tagging", "Write"]
+    }
+  ]
+}
